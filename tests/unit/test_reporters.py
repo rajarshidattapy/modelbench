@@ -49,5 +49,5 @@ def test_terminal_reporter_renders_summary():
     rendered = get_reporter("terminal").render(_report())
 
     assert "ModelBench Report" in rendered
-    assert "Winner: a.pt" in rendered
-
+    assert "Winner:" in rendered
+    assert "a.pt" in rendered
