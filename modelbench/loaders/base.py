@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 
 @dataclass
-class LoadedModel:
+class LoadedModel(ABC):
     """A common inference wrapper returned by every loader."""
 
     model_path: str
@@ -48,4 +48,3 @@ class ModelLoader(ABC):
     @abstractmethod
     def make_input(self, batch_size: int, input_shape: list[int], dtype: str, device: str) -> Any:
         raise NotImplementedError
-

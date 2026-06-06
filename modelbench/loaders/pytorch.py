@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from modelbench.loaders.base import LoadedModel, ModelLoader
 
@@ -33,12 +33,12 @@ class TorchLoadedModel(LoadedModel):
         if self.device == "cuda":
             self.torch_module_ref.cuda.synchronize()
 
-    def parameter_count(self) -> int | None:
+    def parameter_count(self) -> Optional[int]:
         if not hasattr(self.torch_module, "parameters"):
             return None
         return int(sum(parameter.numel() for parameter in self.torch_module.parameters()))
 
-    def non_trainable_parameter_count(self) -> int | None:
+    def non_trainable_parameter_count(self) -> Optional[int]:
         if not hasattr(self.torch_module, "parameters"):
             return None
         return int(
@@ -49,7 +49,7 @@ class TorchLoadedModel(LoadedModel):
         if self.device == "cuda":
             self.torch_module_ref.cuda.reset_peak_memory_stats()
 
-    def peak_memory_bytes(self) -> int | None:
+    def peak_memory_bytes(self) -> Optional[int]:
         if self.device == "cuda":
             return int(self.torch_module_ref.cuda.max_memory_allocated())
         if self.device == "mps" and hasattr(self.torch_module_ref, "mps"):
@@ -101,5 +101,6 @@ class PyTorchModelLoader(ModelLoader):
     def make_input(self, batch_size: int, input_shape: list[int], dtype: str, device: str) -> Any:
         torch_dtype = getattr(self.torch, DTYPE_MAP.get(dtype, "float32"))
         shape = [batch_size, *input_shape]
+        if torch_dtype in {self.torch.int32, self.torch.int64}:
+            return self.torch.randint(0, 10, shape, dtype=torch_dtype, device=device)
         return self.torch.randn(*shape, dtype=torch_dtype, device=device)
-

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from modelbench.config import DEFAULT_COMPARISON_WEIGHTS, BenchmarkReport, ModelBenchmarkResult
 
@@ -14,7 +14,7 @@ LOWER_IS_BETTER = {"p50_ms", "p95_ms", "p99_ms", "mean_ms", "std_ms", "peak_memo
 
 def build_comparison(
     results: List[ModelBenchmarkResult],
-    weights: Dict[str, float] | None = None,
+    weights: Optional[Dict[str, float]] = None,
 ) -> Dict[str, object]:
     weights = weights or dict(DEFAULT_COMPARISON_WEIGHTS)
     grouped = _group_results_by_batch_size(results)
@@ -139,4 +139,3 @@ def _metric_winners(results: List[ModelBenchmarkResult]) -> Dict[str, str]:
         candidates.sort(key=lambda item: item[1], reverse=reverse)
         winners[metric_name] = candidates[0][0]
     return winners
-

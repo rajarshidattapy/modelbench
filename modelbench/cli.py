@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 
 from modelbench import __version__
+from modelbench.compare import LOWER_IS_BETTER
 from modelbench.compare import load_reports_from_path, merge_reports
 from modelbench.config import BenchmarkConfig
 from modelbench.metrics import list_metric_names
@@ -57,7 +58,7 @@ def run(
     """Run a benchmark job."""
 
     comparison_weights = json.loads(weights) if weights else None
-    config = BenchmarkConfig(
+    config_kwargs = dict(
         model_paths=list(model_paths),
         model_format=model_format,
         device=device,
@@ -70,8 +71,10 @@ def run(
         output_dir=output_dir,
         metrics=list(metrics),
         export_formats=list(export_formats),
-        comparison_weights=comparison_weights or None,
     )
+    if comparison_weights is not None:
+        config_kwargs["comparison_weights"] = comparison_weights
+    config = BenchmarkConfig(**config_kwargs)
     bench = ModelBench(config)
     report = bench.run()
     exported = bench.export(report)
@@ -91,12 +94,13 @@ def compare(results_path: str, sort_metric: str) -> None:
 
     reports = load_reports_from_path(results_path)
     report = merge_reports(reports)
+    sort_metric = _canonical_sort_metric(sort_metric)
     if sort_metric:
         report.results.sort(
             key=lambda result: result.metric_map().get(sort_metric).value
             if result.metric_map().get(sort_metric)
             else float("-inf"),
-            reverse=True,
+            reverse=sort_metric not in LOWER_IS_BETTER,
         )
 
     click.echo(get_reporter("terminal").render(report))
@@ -115,6 +119,18 @@ def version() -> None:
     """Print package version."""
 
     click.echo(__version__)
+
+
+def _canonical_sort_metric(sort_metric: str) -> str:
+    aliases = {
+        "throughput": "samples_per_second",
+        "latency": "p99_ms",
+        "p99_latency": "p99_ms",
+        "memory": "peak_memory_mb",
+        "model_size": "model_size_mb",
+        "flops": "gflops_per_inference",
+    }
+    return aliases.get(sort_metric, sort_metric)
 
 
 if __name__ == "__main__":  # pragma: no cover
