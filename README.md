@@ -4,6 +4,8 @@ Benchmark models beyond accuracy.
 
 ModelBench is a CLI-first Python framework for comparing trained models on the metrics that matter in production: latency, throughput, memory, model size, parameter count, and inference efficiency.
 
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/2e1891ed-f6a0-473a-900c-7b22fff43a6b" />
+
 ## Install
 
 ```bash
