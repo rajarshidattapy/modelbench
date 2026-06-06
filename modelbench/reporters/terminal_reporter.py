@@ -42,7 +42,7 @@ class TerminalReporter(Reporter):
         console.print(table)
         if report.comparison and report.comparison.get("winner"):
             console.print(f"Winner: [bold green]{report.comparison['winner']}[/bold green]")
-        return console.export_text()
+        return console.export_text(styles=True)
 
     def _highlight_map(self, results: List[ModelBenchmarkResult]) -> Dict[str, Dict[str, float]]:
         metric_names = ["p50_ms", "p99_ms", "samples_per_second", "peak_memory_mb", "param_count", "gflops_per_inference"]
@@ -78,4 +78,3 @@ class TerminalReporter(Reporter):
             elif metric.value == metric_highlights["worst"]:
                 style = "red"
         return f"[{style}]{value:.3f}[/{style}]"
-
